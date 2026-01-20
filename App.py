@@ -9,7 +9,7 @@ st.set_page_config(
 st.title("🧠 Speed Reading App")
 
 html(
-    """
+"""
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -44,6 +44,35 @@ body {
     border-radius: 12px;
 }
 
+/* BIG READER BOX */
+.reader-box {
+    height: 220px;
+    background: #0f0f0f;
+    border-top: 2px solid var(--border);
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 24px;
+    overflow: hidden;
+}
+
+.word {
+    position: absolute;
+    display: flex;
+    font-size: 56px;
+    font-family: "JetBrains Mono", monospace;
+}
+
+.char {
+    color: var(--text);
+}
+
+.char.orp {
+    color: var(--accent);
+}
+
+/* INPUT BELOW */
 textarea {
     width: 100%;
     height: 120px;
@@ -80,52 +109,21 @@ label {
     align-items: center;
     gap: 8px;
 }
-
-.reader-box {
-    margin-top: 28px;
-    height: 140px;
-    background: #0f0f0f;
-    border-top: 2px solid var(--border);
-    border-bottom: 2px solid var(--border);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 48px;
-    font-family: "JetBrains Mono", monospace;
-}
-
-.word {
-    position: relative;
-    display: flex;
-}
-
-.char {
-    color: var(--text);
-}
-
-.char.orp {
-    color: var(--accent);
-}
-
-.hidden {
-    visibility: hidden;
-}
-
-/* ORP alignment trick */
-.word::before {
-    content: "";
-    display: inline-block;
-    width: 0;
-}
 </style>
 </head>
 
 <body>
 <div class="container">
+
+    <!-- OUTPUT -->
+    <div class="reader-box">
+        <div id="display" class="word"></div>
+    </div>
+
+    <!-- INPUT -->
     <textarea id="textInput" placeholder="Paste your text here..."></textarea>
 
     <div class="controls">
-        <button onclick="initReader()">Read</button>
         <button onclick="play()">Play</button>
         <button onclick="pause()">Pause</button>
         <button onclick="reset()">Reset</button>
@@ -136,91 +134,12 @@ label {
             <span id="wpmValue">300</span>
         </label>
     </div>
-
-    <div class="reader-box">
-        <div id="display" class="word hidden"></div>
-    </div>
 </div>
 
 <script>
 let words = [];
 let index = 0;
 let timer = null;
-let isPaused = true;
+let paused = true;
 
-const display = document.getElementById("display");
-const slider = document.getElementById("wpmSlider");
-const wpmValue = document.getElementById("wpmValue");
-
-slider.oninput = () => wpmValue.innerText = slider.value;
-
-function initReader() {
-    const text = document.getElementById("textInput").value;
-    words = text.trim().split(/\\s+/);
-    index = 0;
-    display.classList.remove("hidden");
-    showWord();
-}
-
-function play() {
-    if (!words.length) return;
-    isPaused = false;
-    loop();
-}
-
-function pause() {
-    isPaused = true;
-    clearTimeout(timer);
-}
-
-function reset() {
-    pause();
-    index = 0;
-    display.innerHTML = "";
-    display.classList.add("hidden");
-}
-
-function loop() {
-    if (isPaused || index >= words.length) return;
-
-    showWord();
-    let delay = 60000 / slider.value;
-
-    if (/[.,!?]$/.test(words[index])) {
-        delay += 100;
-    }
-
-    index++;
-    timer = setTimeout(loop, delay);
-}
-
-function showWord() {
-    display.innerHTML = "";
-    const word = words[index] || "";
-    const chars = word.split("");
-
-    let orpIndex = 1;
-    if (word.length <= 3) orpIndex = 1;
-    else if (word.length <= 7) orpIndex = 2;
-    else orpIndex = 3;
-
-    chars.forEach((c, i) => {
-        const span = document.createElement("span");
-        span.className = "char" + (i === orpIndex ? " orp" : "");
-        span.innerText = c;
-        display.appendChild(span);
-    });
-
-    /* Center ORP */
-    const orpSpan = display.children[orpIndex];
-    const boxCenter = display.parentElement.offsetWidth / 2;
-    const orpOffset = orpSpan.offsetLeft + orpSpan.offsetWidth / 2;
-    display.style.transform = `translateX(${boxCenter - orpOffset}px)`;
-}
-</script>
-</body>
-</html>
-""",
-    height=650,
-)
-
+const display =
