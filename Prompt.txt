@@ -1,0 +1,38 @@
+PROMPT_1-CHATGPT(GPT-5.2)
+
+Role: You are an expert Full-Stack Developer specializing in cognitive science and speed-reading technologies.
+Task: Write the complete, single-file source code (HTML, CSS, and vanilla JavaScript) for a Speed Reading Web Application inspired by "Swift Read" and "Spritz".
+Core Functionality:
+RSVP (Rapid Serial Visual Presentation) Engine:
+Display words one by one in a fixed container.
+Red Focal Point: The "Optimal Recognition Point" (ORP) of the word must be highlighted in red and perfectly centered in the display box to minimize eye movement.
+Adjustable WPM: Allow the user to set Words Per Minute (Range: 100 to 1000 WPM).
+Controls: Play, Pause, Reset buttons.
+Input Methods:
+A text area for users to paste their own text.
+A "Read" button that parses the text and initializes the RSVP reader.
+UI/UX Requirements:
+Modern, Minimalist Design: Use a dark mode interface by default (dark gray background, light text).
+Typography: Use a monospaced font or a clean sans-serif font for the reader display.
+Visual Guide: The reader box should have clear top and bottom borders to guide the eye.
+Algorithm Logic for ORP (Optimal Recognition Point):
+For each word, calculate the center character.
+If the word length is 1-3, center on the 2nd character.
+If 4-7, center on the 3rd.
+If 8+, center on the 4th.
+Constraint: Ensure the red character is always geographically fixed in the center of the div so the user's eye never moves left or right.
+Technical Constraints:
+Use strictly a single HTML file containing <style> for CSS and <script> for JS.
+Do not require external libraries (no React/Vue/jQuery CDN links) to ensure it runs offline.
+Handle basic punctuation delays: Add a slight extra delay (e.g., +100ms) when a word ends in a period or comma to improve comprehension.  create an app.py file.
+
+
+
+PROMPT_2
+EDITS   Kindly update a few things.  the output text does not come in the center but on a righter side. 
+I need you to make the screen where the output words occur bigger, and the input box below. 
+The output box should be above and bigger and the text in center, but the input box should be of the same size it is now but below. 
+2)Remove the read button, just keep play pause and reset button 
+
+PROMPT_3
+ERRORS : unterminated triple-quoted string literal , it stops after 'a' appeared in the input text. its stilll not in the center of the output box 
