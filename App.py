@@ -9,7 +9,7 @@ st.set_page_config(
 st.title("🧠 Speed Reading App")
 
 html(
-"""
+'''
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -55,6 +55,7 @@ body {
     align-items: center;
     margin-bottom: 24px;
     overflow: hidden;
+    position: relative;
 }
 
 .word {
@@ -142,4 +143,73 @@ let index = 0;
 let timer = null;
 let paused = true;
 
-const display =
+const display = document.getElementById("display");
+const slider = document.getElementById("wpmSlider");
+const wpmValue = document.getElementById("wpmValue");
+
+slider.oninput = () => wpmValue.innerText = slider.value;
+
+function play() {
+    if (!words.length) {
+        const text = document.getElementById("textInput").value;
+        words = text.trim().split(/\\s+/);
+        index = 0;
+    }
+    paused = false;
+    loop();
+}
+
+function pause() {
+    paused = true;
+    clearTimeout(timer);
+}
+
+function reset() {
+    pause();
+    words = [];
+    index = 0;
+    display.innerHTML = "";
+    display.style.transform = "translateX(0)";
+}
+
+function loop() {
+    if (paused || index >= words.length) return;
+
+    showWord(words[index]);
+
+    let delay = 60000 / slider.value;
+    if (/[.,!?]$/.test(words[index])) delay += 100;
+
+    index++;
+    timer = setTimeout(loop, delay);
+}
+
+function showWord(word) {
+    display.innerHTML = "";
+
+    const chars = word.split("");
+    let orpIndex = 1;
+    if (word.length <= 3) orpIndex = 1;
+    else if (word.length <= 7) orpIndex = 2;
+    else orpIndex = 3;
+
+    chars.forEach((c, i) => {
+        const span = document.createElement("span");
+        span.className = "char" + (i === orpIndex ? " orp" : "");
+        span.innerText = c;
+        display.appendChild(span);
+    });
+
+    const orpChar = display.children[orpIndex];
+    const box = display.parentElement;
+    const boxCenter = box.offsetWidth / 2;
+    const orpCenter = orpChar.offsetLeft + orpChar.offsetWidth / 2;
+
+    display.style.transform = `translateX(${boxCenter - orpCenter}px)`;
+}
+</script>
+</body>
+</html>
+''',
+height=760
+)
