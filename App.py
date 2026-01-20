@@ -1,12 +1,8 @@
 import streamlit as st
 from streamlit.components.v1 import html
 
-st.set_page_config(
-    page_title="Speed Reader",
-    layout="centered",
-)
-
-st.title("🧠 Speed Reading App")
+st.set_page_config(page_title="CogniRead", layout="centered")
+st.title("🧠 CogniRead – Speed Reading Aid")
 
 html(
 '''
@@ -14,7 +10,6 @@ html(
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Speed Reader</title>
 
 <style>
 :root {
@@ -31,9 +26,9 @@ html(
 }
 
 body {
-    margin: 0;
     background: var(--bg);
     color: var(--text);
+    margin: 0;
 }
 
 .container {
@@ -44,36 +39,44 @@ body {
     border-radius: 12px;
 }
 
-/* BIG READER BOX */
+/* ===== READER ===== */
 .reader-box {
-    height: 220px;
+    height: 240px;
     background: #0f0f0f;
     border-top: 2px solid var(--border);
     border-bottom: 2px solid var(--border);
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
     margin-bottom: 24px;
-    overflow: hidden;
-    position: relative;
 }
 
-.word {
-    position: absolute;
-    display: flex;
+.reader-word {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    width: 100%;
     font-size: 56px;
     font-family: "JetBrains Mono", monospace;
 }
 
-.char {
-    color: var(--text);
+.left {
+    text-align: right;
+    padding-right: 6px;
 }
 
-.char.orp {
+.center {
     color: var(--accent);
+    text-align: center;
+    min-width: 1ch;
 }
 
-/* INPUT BELOW */
+.right {
+    text-align: left;
+    padding-left: 6px;
+}
+
+/* ===== INPUT ===== */
 textarea {
     width: 100%;
     height: 120px;
@@ -85,6 +88,7 @@ textarea {
     resize: vertical;
 }
 
+/* ===== CONTROLS ===== */
 .controls {
     display: flex;
     flex-wrap: wrap;
@@ -116,12 +120,14 @@ label {
 <body>
 <div class="container">
 
-    <!-- OUTPUT -->
     <div class="reader-box">
-        <div id="display" class="word"></div>
+        <div id="reader" class="reader-word">
+            <div class="left"></div>
+            <div class="center"></div>
+            <div class="right"></div>
+        </div>
     </div>
 
-    <!-- INPUT -->
     <textarea id="textInput" placeholder="Paste your text here..."></textarea>
 
     <div class="controls">
@@ -131,8 +137,8 @@ label {
 
         <label>
             WPM
-            <input type="range" min="100" max="1000" value="300" id="wpmSlider">
-            <span id="wpmValue">300</span>
+            <input type="range" min="100" max="1000" value="300" id="wpm">
+            <span id="wpmVal">300</span>
         </label>
     </div>
 </div>
@@ -143,16 +149,20 @@ let index = 0;
 let timer = null;
 let paused = true;
 
-const display = document.getElementById("display");
-const slider = document.getElementById("wpmSlider");
-const wpmValue = document.getElementById("wpmValue");
+const reader = document.getElementById("reader");
+const left = reader.children[0];
+const center = reader.children[1];
+const right = reader.children[2];
+const wpmSlider = document.getElementById("wpm");
+const wpmVal = document.getElementById("wpmVal");
 
-slider.oninput = () => wpmValue.innerText = slider.value;
+wpmSlider.oninput = () => wpmVal.innerText = wpmSlider.value;
 
 function play() {
     if (!words.length) {
-        const text = document.getElementById("textInput").value;
-        words = text.trim().split(/\\s+/);
+        const text = document.getElementById("textInput").value.trim();
+        if (!text) return;
+        words = text.split(/\\s+/);
         index = 0;
     }
     paused = false;
@@ -168,48 +178,40 @@ function reset() {
     pause();
     words = [];
     index = 0;
-    display.innerHTML = "";
-    display.style.transform = "translateX(0)";
+    left.textContent = "";
+    center.textContent = "";
+    right.textContent = "";
 }
 
 function loop() {
     if (paused || index >= words.length) return;
 
-    showWord(words[index]);
+    renderWord(words[index]);
 
-    let delay = 60000 / slider.value;
-    if (/[.,!?]$/.test(words[index])) delay += 100;
+    let delay = 60000 / wpmSlider.value;
+    if (/[.,!?]$/.test(words[index])) delay += 120;
 
     index++;
     timer = setTimeout(loop, delay);
 }
 
-function showWord(word) {
-    display.innerHTML = "";
+function renderWord(word) {
+    const clean = word.replace(/[^a-zA-Z0-9]/g, "");
+    const len = clean.length;
 
-    const chars = word.split("");
-    let orpIndex = 1;
-    if (word.length <= 3) orpIndex = 1;
-    else if (word.length <= 7) orpIndex = 2;
-    else orpIndex = 3;
+    let orp = 0;
+    if (len >= 2 && len <= 3) orp = 1;
+    else if (len >= 4 && len <= 7) orp = 2;
+    else if (len >= 8) orp = 3;
+    orp = Math.min(orp, len - 1);
 
-    chars.forEach((c, i) => {
-        const span = document.createElement("span");
-        span.className = "char" + (i === orpIndex ? " orp" : "");
-        span.innerText = c;
-        display.appendChild(span);
-    });
-
-    const orpChar = display.children[orpIndex];
-    const box = display.parentElement;
-    const boxCenter = box.offsetWidth / 2;
-    const orpCenter = orpChar.offsetLeft + orpChar.offsetWidth / 2;
-
-    display.style.transform = `translateX(${boxCenter - orpCenter}px)`;
+    left.textContent = clean.slice(0, orp);
+    center.textContent = clean.charAt(orp) || "";
+    right.textContent = clean.slice(orp + 1);
 }
 </script>
 </body>
 </html>
 ''',
-height=760
+height=780
 )
